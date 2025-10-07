@@ -243,7 +243,7 @@ header.header-bar a:hover{ color:#24c33c; }
       <h2 style="margin:10px 0 6px">Fale diretamente conosco</h2>
       <p style="color:#c8f3d3;max-width:54ch">Preencha seus dados e te chamaremos no WhatsApp com a simulação personalizada e o passo a passo para adesão e aproveite para tirar dúvidas!</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
-        <a class="btn" href="#" id="ctaWhatsapp">Chamar no WhatsApp</a>
+        <a class="btn" href="#" id="ctaWhatsapp">Iniciar meu atendimento</a>
         <small>Ou ligue/WhatsApp: <strong>(51) 9320-8419</strong></small>
       </div>
     </div>
@@ -335,7 +335,7 @@ header.header-bar a:hover{ color:#24c33c; }
 <details>
   <summary>Posso aderir mesmo se o imóvel for alugado ou não estiver no meu nome?</summary>
   <p>Sim! <strong>Não há nenhum impedimento</strong>. Como não é feita nenhuma instalação no local, o fato de o imóvel ser alugado ou estar em nome de outra pessoa <strong>não interfere na adesão</strong>.</p>
-  <p>O único requisito é que a <strong>conta de energia esteja em nome da pessoa que fará o cadastro</strong>, sendo a mesma do <strong>documento de identidade enviado</strong> para validação e assinatura digital.</p>
+  <p>O único requisito é que <strong>o titular da conta de energia seja a pessoa que fará o cadastro</strong>, sendo a mesma pessoa do <strong>documento de identidade enviado</strong> para validação e assinatura digital.</p>
 </details>
 <details>
   <summary>A conta de luz está no nome do meu CNPJ. Como faço?</summary>
@@ -380,12 +380,51 @@ function getVal(id){ return (document.getElementById(id)?.value || '').trim(); }
 function getUTM(name){ const p = new URLSearchParams(location.search); return p.get(name) || ''; }
 function withTimeout(promise, ms=1200){ return Promise.race([ promise.catch(()=>{}), new Promise(r=>setTimeout(r,ms)) ]); }
 
-// Cálculo de economia (usando a conta preenchida na seção de lead)
+// Fonte única de verdade para o valor da conta (simulador/lead)
+function getContaNumber(){
+  // prioridade: campo do simulador (#conta); fallback: campo de lead (#contaLead)
+  const raw = getVal('conta') || getVal('contaLead') || '0';
+  let n = parseMoedaBR(raw);
+  // aplica mínimo do input (se existir)
+  const minAttr = parseFloat(document.getElementById('conta')?.getAttribute('min') || '0');
+  if (!isFinite(n) || n < 0) n = 0;
+  if (isFinite(minAttr) && n < minAttr) n = minAttr;
+  return n;
+}
+
+// Cálculo de economia
 function calcularEconomia(conta){
   const economia = conta * 0.10;
   const economiaAnual = economia * 12;
   return { economia, economiaAnual };
 }
+
+// --- Simulador: ler input, calcular e pintar na tela ---
+function atualizarSimulador(){
+  const conta = getContaNumber();
+  const { economia, economiaAnual } = calcularEconomia(conta);
+
+  const elMes = document.getElementById('economia');
+  const elAno = document.getElementById('economiaAnual');
+
+  if (elMes) elMes.textContent = `${formatBRL(economia)}/mês`;
+  if (elAno) elAno.textContent = `${formatBRL(economiaAnual)}/ano`;
+}
+
+// Bind do botão "Calcular"
+document.getElementById('btn-simular')?.addEventListener('click', atualizarSimulador);
+
+// Atualiza em tempo real durante a digitação
+document.getElementById('conta')?.addEventListener('input', atualizarSimulador);
+
+// Formata o campo ao sair do foco (opcional)
+document.getElementById('conta')?.addEventListener('blur', (e)=>{
+  const n = getContaNumber();
+  e.target.value = Math.round(n).toString(); // mantém numérico simples (ex.: 2000). Se quiser BRL aqui, dá pra trocar.
+});
+
+// Preenche os valores iniciais com o default do input (ex.: 2000)
+atualizarSimulador();
 
 // Envia para Google Sheets
 function salvarLeadNoSheets(){
@@ -393,9 +432,8 @@ function salvarLeadNoSheets(){
   const fone    = getVal('fone');
   const email   = getVal('email');
   const cidade  = getVal('cidade');
-  // pega da seção do lead; se estiver vazio, tenta um campo "conta" antigo (fallback)
-  const contaLeadStr = getVal('contaLead') || getVal('conta');
-  const conta  = parseMoedaBR(contaLeadStr);
+
+  const conta   = getContaNumber();
   const { economia } = calcularEconomia(conta);
 
   const body = new URLSearchParams({
@@ -405,7 +443,7 @@ function salvarLeadNoSheets(){
     cidade,
     conta: String(conta),
     economiaMes: economia.toFixed(2),
-    economiaAno: (economia * 12).toFixed(2),
+    economiaAno: (economia * 12).toFixed(2), // ok usar economia*12 aqui
     origem: 'LP Conexão Green - Fale Conosco',
     userAgent: navigator.userAgent,
     utm_source: getUTM('utm_source'),
@@ -427,9 +465,8 @@ function salvarLeadNoSheets(){
 document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
   e.preventDefault();
 
-  const nome   = getVal('nome');
-  const contaS = getVal('contaLead') || getVal('conta');
-  const conta  = parseMoedaBR(contaS);
+  const nome  = getVal('nome');
+  const conta = getContaNumber();
 
   // Validação mínima
   if(!nome || !conta){
