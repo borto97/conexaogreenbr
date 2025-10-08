@@ -245,17 +245,10 @@ header.header-bar a:hover{ color:#24c33c; }
 </section>
 
 <section class="form" id="fale-conosco">
-  <div class="container inner">
-    <div>
-      <span class="badge">Atendimento humano</span>
-      <h2 style="margin:10px 0 6px">Fale diretamente conosco</h2>
-      <p style="color:#c8f3d3;max-width:54ch">Preencha seus dados e te chamaremos no WhatsApp com a simulação personalizada e o passo a passo para adesão e aproveite para tirar dúvidas!</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
-        <a class="btn" href="#" id="ctaWhatsapp">Iniciar meu atendimento</a>
-        <small>Ou ligue/WhatsApp: <strong>(51) 9320-8419</strong></small>
-      </div>
-    </div>
-    <div class="panel">
+  <div class="container inner" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:40px">
+
+    <!-- Coluna esquerda: formulário -->
+    <div class="panel" style="flex:1 1 320px;max-width:480px">
       <label>Nome</label>
       <input id="nome" placeholder="Seu nome" />
       <label>WhatsApp</label>
@@ -268,8 +261,24 @@ header.header-bar a:hover{ color:#24c33c; }
       <input id="contaLead" type="number" placeholder="Ex.: 2000" />
       <small>Ao enviar, você concorda em ser contatado para oferta do Conexão Green.</small>
     </div>
+
+    <!-- Coluna direita: atendimento humano -->
+    <div style="flex:1 1 320px;max-width:420px;text-align:left">
+      <span class="badge">Atendimento humano</span>
+      <h2 style="margin:10px 0 6px">Fale diretamente conosco</h2>
+      <p style="color:#c8f3d3;max-width:54ch">
+        Preencha seus dados e te chamaremos no WhatsApp com a simulação personalizada e o passo a passo para adesão.
+        Aproveite para tirar dúvidas!
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+        <a class="btn" href="#" id="ctaWhatsapp">Iniciar meu atendimento</a>
+        <small>Ou ligue/WhatsApp: <strong>(51) 9320-8419</strong></small>
+      </div>
+    </div>
+
   </div>
 </section>
+
 
 <section class="section container" id="base-legal">
   <div style="display: flex; align-items: center; gap: 10px;">
