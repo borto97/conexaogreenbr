@@ -451,6 +451,19 @@ document.getElementById('conta')?.addEventListener('blur', (e)=>{
   e.target.value = Math.round(n).toString(); // mantém numérico simples (ex.: 2000). Se quiser BRL aqui, dá pra trocar.
 });
 
+function getContaLeadNumber() {
+  const el = document.getElementById('contaLead');
+  const raw = (el?.value || '').trim();
+  // use seu parseMoedaBR se existir; senão converte básico:
+  let n = (typeof parseMoedaBR === 'function')
+    ? parseMoedaBR(raw)
+    : Number(raw.replace(/\./g, '').replace(',', '.'));
+  if (!isFinite(n) || n < 0) n = 0;
+  const minAttr = parseFloat(el?.getAttribute('min') || '0');
+  if (isFinite(minAttr) && n < minAttr) n = minAttr;
+  return n;
+}
+
 // Preenche os valores iniciais com o default do input (ex.: 2000)
 atualizarSimulador();
 
@@ -461,7 +474,7 @@ function salvarLeadNoSheets(){
   const email   = getVal('email');
   const cidade  = getVal('cidade');
 
-  const conta   = getContaNumber();
+  const conta   = getContaLeadNumber();
   const { economia } = calcularEconomia(conta);
 
   const body = new URLSearchParams({
@@ -494,7 +507,7 @@ document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
   e.preventDefault();
 
   const nome  = getVal('nome');
-  const conta = getContaNumber();
+  const conta = getContaLeadNumber();
 
   // Validação mínima
   if(!nome || !conta){
