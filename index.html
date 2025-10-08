@@ -103,12 +103,23 @@ header.header-bar .header-inner{
 header.header-bar a{ color:#dfffe4; }
 header.header-bar a:hover{ color:#24c33c; }
 
-@media (max-width: 980px){
-  .hero-inner{grid-template-columns:1fr}
-  .calc{grid-template-columns:1fr}
-  .steps{grid-template-columns:1fr 1fr}
-  .grid-3{grid-template-columns:1fr}
-  .form .inner{grid-template-columns:1fr}
+@media (max-width: 980px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+  .calc {
+    grid-template-columns: 1fr;
+  }
+  .steps {
+    grid-template-columns: 1fr 1fr;
+  }
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .form .inner {
+    grid-template-columns: 1fr;
+    padding: 0 24px; /* 👈 borda lateral mais larga no mobile */
+  }
 }
 </style>
 </head>
