@@ -116,9 +116,19 @@ header.header-bar a:hover{ color:#24c33c; }
   .grid-3 {
     grid-template-columns: 1fr;
   }
+
+  /* 🟢 espaçamento lateral global no mobile */
+  .inner, 
+  .container.inner, 
+  section .inner, 
+  section .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  /* mantém o ajuste do formulário */
   .form .inner {
     grid-template-columns: 1fr;
-    padding: 0 24px; /* 👈 borda lateral mais larga no mobile */
   }
 }
 </style>
