@@ -142,6 +142,83 @@ a{ color:inherit; text-decoration:none }
 .dot-eco{ background:#10b981 }
 svg#chartEconomia{ width:100%; height:140px; display:block }
 
+/* Painel único que agrupa cards + gráfico */
+.eco-panel{
+  background:#0a1510;
+  border:1px solid #133a1b;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+/* Grade responsiva dos cards (Antes / Igreen / Economia) */
+.eco-grid{
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom:12px;
+}
+
+/* Cartões internos */
+.eco-card{
+  background:#0d1712;
+  border:1px solid #14401b;
+  border-radius:12px;
+  padding:12px;
+}
+.eco-card.eco-highlight{
+  background:#0c1b11;
+  border-color:#0ea75a;
+  box-shadow:0 0 0 1px rgba(16,185,129,.15) inset, 0 8px 20px rgba(16,185,129,.08);
+}
+
+/* Pílulas e preços (reaproveita tuas classes) */
+.pill{
+  display:inline-block; font-weight:700; font-size:12px; letter-spacing:.02em;
+  padding:6px 10px; border-radius:999px; margin-bottom:8px;
+}
+.pill-atual{ background:#fee2e2; color:#991b1b }
+.pill-igreen{ background:#dcfce7; color:#065f46 }
+.pill-economia{ background:#bbf7d0; color:#065f46 }
+
+.price{ display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px dashed rgba(255,255,255,.06) }
+.price:first-of-type{ border-top:none }
+.price span{ font-size:12px; color:#9bdab0 }
+.price strong{ font-size:18px; font-weight:800; color:#e7fff1 }
+
+/* Gráfico dentro do painel */
+.eco-chart{
+  background:#0b1410;
+  border:1px solid #133a1b;
+  border-radius:12px;
+  padding:10px;
+  position:relative; /* para o tooltip */
+}
+.chart-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; color:#dffbe6 }
+.chart-head small{ color:#9be7b2 }
+.chart-legend{ display:flex; align-items:center; gap:8px; margin-top:6px; color:#c7f5d6; font-size:12px }
+.dot{ width:10px; height:10px; border-radius:50%; display:inline-block }
+.dot-eco{ background:#10b981 }
+svg#chartEconomia{ width:100%; height:160px; display:block }
+
+/* Tooltip do gráfico */
+.chart-tooltip{
+  position:absolute; pointer-events:none;
+  background:#0b1410; border:1px solid #133a1b; color:#dffbe6;
+  padding:6px 8px; border-radius:8px; font-size:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transform:translate(-50%,-120%); white-space:nowrap;
+  display:none;
+}
+.chart-axis text{ fill:rgba(255,255,255,.7); font-size:11px }
+.chart-tick{ stroke:rgba(255,255,255,.12); stroke-width:1 }
+
+/* Mobile refinements */
+@media (max-width: 420px){
+  .eco-panel{ padding:12px }
+  .price strong{ font-size:17px }
+}
+
 /* Tooltip do gráfico */
 .chart-wrap{ position:relative; } /* já existia, mas garantimos o posicionamento do tooltip */
 .chart-tooltip{
@@ -380,68 +457,46 @@ footer .logo{ height:34px; opacity:.9 }
       <small class="hint">Use apenas números. Ex.: 750</small>
     </div>
 
-    <div class="output" id="resultado">
-      <div><strong>Economia mensal estimada (10%):</strong>
-        <div class="num" id="economia">R$ 200,00/mês</div>
-      </div>
-      <div style="margin-top:8px"><strong>Economia anual estimada:</strong>
-        <div class="num" id="economiaAnual">R$ 2.400,00/ano</div>
-      </div>
-
-      <!-- Antes x Depois -->
-      <div class="compare">
-        <div class="col">
-          <div class="pill pill-atual">Você paga hoje</div>
-          <div class="price">
-            <span>Mensal</span>
-            <strong id="atualMensal">R$ 2.000,00</strong>
-          </div>
-          <div class="price">
-            <span>Anual</span>
-            <strong id="atualAnual">R$ 24.000,00</strong>
-          </div>
-        </div>
-        <div class="col">
-          <div class="pill pill-igreen">Com Igreen (~10% menor)</div>
-          <div class="price">
-            <span>Mensal</span>
-            <strong id="igreenMensal">R$ 1.800,00</strong>
-          </div>
-          <div class="price">
-            <span>Anual</span>
-            <strong id="igreenAnual">R$ 21.600,00</strong>
-          </div>
-        </div>
-        <div class="col highlight">
-          <div class="pill pill-economia">Sua economia</div>
-          <div class="price">
-            <span>Mensal</span>
-            <strong id="ecoMensal">R$ 200,00</strong>
-          </div>
-          <div class="price">
-            <span>Anual</span>
-            <strong id="ecoAnual">R$ 2.400,00</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gráfico de evolução da economia (acumulada) -->
-      <div class="chart-wrap">
-        <div class="chart-head">
-          <strong>Economia acumulada (24 meses)</strong>
-          <small id="chartHint">Considerando 10% de desconto</small>
-        </div>
-        <svg id="chartEconomia" viewBox="0 0 600 140" role="img" aria-label="Gráfico de economia acumulada ao longo de 24 meses"></svg>
-        <div class="chart-tooltip" id="chartTip">mês 0 — R$ 0,00</div>
-        <div class="chart-legend">
-          <span class="dot dot-eco"></span> Economia acumulada
-        </div>
-      </div>
-
-      <div style="margin-top:8px">
-        <small>*Estimativa ilustrativa. O desconto será aplicado na fatura em até 60 dias, conforme a distribuidora.</small>
-      </div>
+    <!-- Painel único -->
+<div class="eco-panel">
+  <!-- Linha 1: Antes / Igreen / Economia -->
+  <div class="eco-grid">
+    <div class="eco-card">
+      <div class="pill pill-atual">Você paga hoje</div>
+      <div class="price"><span>Mensal</span><strong id="atualMensal">R$ 2.000,00</strong></div>
+      <div class="price"><span>Anual</span><strong id="atualAnual">R$ 24.000,00</strong></div>
     </div>
+
+    <div class="eco-card">
+      <div class="pill pill-igreen">Com Igreen (~10% menor)</div>
+      <div class="price"><span>Mensal</span><strong id="igreenMensal">R$ 1.800,00</strong></div>
+      <div class="price"><span>Anual</span><strong id="igreenAnual">R$ 21.600,00</strong></div>
+    </div>
+
+    <div class="eco-card eco-highlight">
+      <div class="pill pill-economia">Sua economia</div>
+      <div class="price"><span>Mensal</span><strong id="ecoMensal">R$ 200,00</strong></div>
+      <div class="price"><span>Anual</span><strong id="ecoAnual">R$ 2.400,00</strong></div>
+    </div>
+  </div>
+
+  <!-- Linha 2: Gráfico -->
+  <div class="eco-chart">
+    <div class="chart-head">
+      <strong>Economia acumulada (24 meses)</strong>
+      <small id="chartHint">Considerando 10% de desconto</small>
+    </div>
+
+    <svg id="chartEconomia" viewBox="0 0 600 160" role="img" aria-label="Gráfico de economia acumulada"></svg>
+    <div class="chart-legend">
+      <span class="dot dot-eco"></span> Economia acumulada
+    </div>
+
+    <!-- tooltip (já usado pelo script atualizado) -->
+    <div class="chart-tooltip" id="chartTip">Mês 0 — R$ 0,00</div>
+  </div>
+</div>
+
   </div>
 </section>
 
