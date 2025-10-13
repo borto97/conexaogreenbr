@@ -818,8 +818,8 @@ footer .logo{ height:34px; opacity:.9 }
   // GA4 (Analytics)
   gtag('config', 'G-0XZ5S8WP4H');
 
-  // Google Ads (Conversions)
-  gtag('config', 'AW-XXXXXXX'); // <-- substitua pelo seu ID de Ads
+  // Google Ads (Conversions) — ok manter
+  gtag('config', 'AW-1580989660');
 </script>
 <!-- ================== /GOOGLE ================== -->
 
@@ -827,41 +827,22 @@ footer .logo{ height:34px; opacity:.9 }
 // === CONFIG ===
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbznBiO_6Iq8agDHXTHe56XsyCWOhJtQksU0yLdLQeTe1c5P2Cz0zYarOIvIG917lixyCw/exec';
 const WHATSAPP_NUMERO = '5551993208419';
-const TAXA = 0.10;      // 10% de desconto
-const MESES = 24;       // horizonte do gráfico
+const TAXA = 0.10;
+const MESES = 24;
 
 // === UTILS ===
 function formatBRL(v){ return (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function parseMoedaBR(str=''){
-  // aceita "2500", "2.500", "2.500,00" etc.
-  str = String(str).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'');
-  str = str.replace(',', '.');
-  const n = parseFloat(str);
-  return isNaN(n) ? 0 : n;
-}
+function parseMoedaBR(str=''){ str=String(str).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,''); str=str.replace(',', '.'); const n=parseFloat(str); return isNaN(n)?0:n; }
 function getVal(id){ return (document.getElementById(id)?.value || '').trim(); }
-function getUTM(name){ const p = new URLSearchParams(location.search); return p.get(name) || ''; }
-function withTimeout(promise, ms=1200){ return Promise.race([ promise.catch(()=>{}), new Promise(r=>setTimeout(r,ms)) ]); }
-
-// === FONTE ÚNICA PARA O VALOR DA CONTA ===
-function getContaNumber(){
-  // prioridade: campo do simulador (#conta); fallback: campo de lead (#contaLead)
-  const raw = getVal('conta') || getVal('contaLead') || '0';
-  let n = parseMoedaBR(raw);
-  const minAttr = parseFloat(document.getElementById('conta')?.getAttribute('min') || '0');
-  if (!isFinite(n) || n < 0) n = 0;
-  if (isFinite(minAttr) && n < minAttr) n = minAttr;
-  return n;
-}
-function getContaLeadNumber() {
-  const el = document.getElementById('contaLead');
-  const raw = (el?.value || '').trim();
-  let n = (typeof parseMoedaBR === 'function')
-    ? parseMoedaBR(raw)
-    : Number(raw.replace(/\./g, '').replace(',', '.'));
-  if (!isFinite(n) || n < 0) n = 0;
-  const minAttr = parseFloat(el?.getAttribute('min') || '0');
-  if (isFinite(minAttr) && n < minAttr) n = minAttr;
+function getUTM(name){ const p=new URLSearchParams(location.search); return p.get(name)||''; }
+function withTimeout(promise, ms=1200){ return Promise.race([promise.catch(()=>{}), new Promise(r=>setTimeout(r,ms))]); }
+function getContaLeadNumber(){
+  const el=document.getElementById('contaLead');
+  const raw=(el?.value||'').trim();
+  let n=parseMoedaBR(raw);
+  if(!isFinite(n)||n<0) n=0;
+  const minAttr=parseFloat(el?.getAttribute('min')||'0');
+  if(isFinite(minAttr)&&n<minAttr) n=minAttr;
   return n;
 }
 
@@ -869,202 +850,77 @@ function getContaLeadNumber() {
 function calcularEconomia(conta){
   const economia = conta * TAXA;
   const economiaAnual = economia * 12;
-  const igreenMensal = conta - economia;
-  const igreenAnual  = igreenMensal * 12;
-  return { economia, economiaAnual, igreenMensal, igreenAnual };
+  return { economia, economiaAnual };
 }
 
-// === UI: DESENHAR GRÁFICO SVG ===
-function drawChartEconomia(ecoMensal){
-  const svg = document.getElementById('chartEconomia');
-  if(!svg) return;
-
-  // dimensões do gráfico
-  const w = 600, h = 160, pad = 28;
-  const meses = MESES; // 24
-  const pts = [];
-  for (let m=0; m<=meses; m++) pts.push({ m, y: ecoMensal*m }); // economia acumulada
-
-  const yMax = Math.max(1, pts[pts.length-1].y);
-  const sx = (m)=> pad + (m/meses)*(w-2*pad);
-  const sy = (y)=> h - pad - (y / yMax) * (h-2*pad);
-
-  // linha e área
-  let dLine = "", dArea = `M ${sx(0)} ${sy(0)}`;
-  pts.forEach((p,i)=>{
-    const x=sx(p.m), y=sy(p.y);
-    dLine += (i===0?`M ${x} ${y}`:` L ${x} ${y}`);
-    dArea += ` L ${x} ${y}`;
-  });
-  dArea += ` L ${sx(meses)} ${h-pad} L ${sx(0)} ${h-pad} Z`;
-
-  // ticks dos eixos
-  const xTicks = [0,6,12,18,24];
-  const yTicks = [0, yMax*0.5, yMax];
-
-  // grid horizontal
-  let gridH = "";
-  yTicks.forEach(v=>{
-    const gy = sy(v);
-    gridH += `<line class="chart-tick" x1="${pad}" y1="${gy}" x2="${w-pad}" y2="${gy}"></line>`;
-  });
-
-  // dots em cada 6 meses
-  let dots = "";
-  xTicks.forEach(m=>{
-    const p = pts[m];
-    dots += `<circle class="chart-dot" cx="${sx(m)}" cy="${sy(p.y)}" r="3"/>`;
-  });
-
-  // eixo + labels
-  let axis = `
-    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-    <g class="chart-axis">
-      ${xTicks.map(m=>`<text x="${sx(m)}" y="${h-pad+14}" text-anchor="middle">${m}m</text>`).join('')}
-      ${yTicks.map(v=>`<text x="${pad-6}" y="${sy(v)+4}" text-anchor="end">${formatBRL(v)}</text>`).join('')}
-    </g>
-  `;
-
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.innerHTML = `
-    <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>
-    ${gridH}
-    <path d="${dArea}" fill="rgba(16,185,129,.18)" stroke="none"></path>
-    <path d="${dLine}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"></path>
-    ${dots}
-    ${axis}
-  `;
-
-  // Tooltip interativo
-  const tip = document.getElementById('chartTip');
-  if(!tip) return;
-
-  const plotLeft = pad, plotRight = w - pad;
-
-  function nearestMonthFromX(clientX){
-    const bbox = svg.getBoundingClientRect();
-    const x = (clientX - bbox.left) * (w / bbox.width);
-    const clamped = Math.max(plotLeft, Math.min(plotRight, x));
-    const ratio = (clamped - plotLeft) / (plotRight - plotLeft);
-    let m = Math.round(ratio * MESES);
-    m = Math.max(0, Math.min(MESES, m));
-    return m;
-  }
-  function positionTip(clientX){
-    const bbox = svg.getBoundingClientRect();
-    const x = clientX - bbox.left;
-    tip.style.left = `${x}px`;
-  }
-  svg.onmousemove = (e)=>{
-    const m = nearestMonthFromX(e.clientX);
-    const val = ecoMensal * m;
-    tip.textContent = `Mês ${m} — ${formatBRL(val)}`;
-    tip.style.display = 'block';
-    positionTip(e.clientX);
-  };
-  svg.onmouseleave = ()=>{ tip.style.display = 'none'; };
-}
-
-// === UI: ATUALIZAR SIMULADOR / CAMPOS ===
-function atualizarSimulador(){
-  const conta = getContaNumber();
-  const { economia, economiaAnual, igreenMensal, igreenAnual } = calcularEconomia(conta);
-
-  const elMes = document.getElementById('economia');
-  const elAno = document.getElementById('economiaAnual');
-  if (elMes) elMes.textContent = `${formatBRL(economia)}/mês`;
-  if (elAno) elAno.textContent = `${formatBRL(economiaAnual)}/ano`;
-
-  const elAtualMensal = document.getElementById('atualMensal');
-  const elAtualAnual  = document.getElementById('atualAnual');
-  const elIgreenMensal= document.getElementById('igreenMensal');
-  const elIgreenAnual = document.getElementById('igreenAnual');
-  const elEcoMensal   = document.getElementById('ecoMensal');
-  const elEcoAnual2   = document.getElementById('ecoAnual');
-
-  if (elAtualMensal) elAtualMensal.textContent = formatBRL(conta);
-  if (elAtualAnual)  elAtualAnual.textContent  = formatBRL(conta * 12);
-  if (elIgreenMensal)elIgreenMensal.textContent= formatBRL(igreenMensal);
-  if (elIgreenAnual) elIgreenAnual.textContent = formatBRL(igreenAnual);
-  if (elEcoMensal)   elEcoMensal.textContent   = formatBRL(economia);
-  if (elEcoAnual2)   elEcoAnual2.textContent   = formatBRL(economiaAnual);
-
-  drawChartEconomia(economia);
-}
-
-// === BINDINGS: ENTRADAS / BOTÕES ===
-document.getElementById('btn-simular')?.addEventListener('click', atualizarSimulador);
-document.getElementById('conta')?.addEventListener('input', atualizarSimulador);
-document.getElementById('conta')?.addEventListener('keyup', e => { if(e.key==='Enter') atualizarSimulador(); });
-document.getElementById('conta')?.addEventListener('blur', (e)=>{
-  const n = getContaNumber();
-  e.target.value = Math.round(n).toString();
-});
-
-// inicializa com o valor padrão do input
-atualizarSimulador();
-
-// === PERSISTÊNCIA: ENVIAR PARA GOOGLE SHEETS ===
+// === SALVAR LEAD ===
 function salvarLeadNoSheets(){
-  const nome    = getVal('nome');
-  const fone    = getVal('fone');
-  const email   = getVal('email');
-  const cidade  = getVal('cidade');
+  const nome=getVal('nome');
+  const fone=getVal('fone');
+  const email=getVal('email');
+  const cidade=getVal('cidade');
+  const conta=getContaLeadNumber();
+  const { economia }=calcularEconomia(conta);
 
-  const conta   = getContaLeadNumber();
-  const { economia } = calcularEconomia(conta);
-
-  const body = new URLSearchParams({
-    nome,
-    fone,
-    email,
-    cidade,
-    conta: String(conta),
-    economiaMes: economia.toFixed(2),
-    economiaAno: (economia * 12).toFixed(2),
-    origem: 'LP Conexão Green - Fale Conosco',
-    userAgent: navigator.userAgent,
-    utm_source: getUTM('utm_source'),
-    utm_medium: getUTM('utm_medium'),
-    utm_campaign: getUTM('utm_campaign'),
-    utm_term: getUTM('utm_term'),
-    utm_content: getUTM('utm_content')
+  const body=new URLSearchParams({
+    nome, fone, email, cidade,
+    conta:String(conta),
+    economiaMes:economia.toFixed(2),
+    economiaAno:(economia*12).toFixed(2),
+    origem:'LP Conexão Green - Fale Conosco',
+    userAgent:navigator.userAgent,
+    utm_source:getUTM('utm_source'),
+    utm_medium:getUTM('utm_medium'),
+    utm_campaign:getUTM('utm_campaign'),
+    utm_term:getUTM('utm_term'),
+    utm_content:getUTM('utm_content')
   });
 
-  return fetch(WEB_APP_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+  return fetch(WEB_APP_URL,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
     body
   });
 }
 
-// === CTA WHATSAPP: SALVA, MARCA CONVERSÃO E ABRE CONVERSA ===
+/* === Snippet "Clique" (delayed navigation) — GA4 ===
+   Envia o evento GA4 e depois navega/abre o WhatsApp */
+function gtagSendEvent(url, valueNum){
+  var callback = function(){ window.location.href = url; };
+  if (typeof gtag === 'function'){
+    gtag('event','conversion_event_contact',{
+      event_callback: callback,
+      event_timeout: 2000,          // fallback em 2s
+      event_category: 'lead',
+      event_label: 'whatsapp_cta',
+      value: valueNum || 0          // opcional: enviar valor numérico
+    });
+  } else {
+    callback();
+  }
+  return false;
+}
+
+// === EVENTO DE CONVERSÃO + ABERTURA DO WHATSAPP ===
 document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
   e.preventDefault();
 
-  const nome  = getVal('nome');
-  const conta = getContaLeadNumber();
+  const nome=getVal('nome');
+  const conta=getContaLeadNumber();
+  const cidade=getVal('cidade');
 
-  if(!nome || !conta){
+  if(!nome||!conta){
     alert('Preencha pelo menos NOME e a CONTA de luz média.');
     return;
   }
 
-  // Salva o lead (não bloqueia mais que 1,2s)
-  await withTimeout(salvarLeadNoSheets(), 1200);
+  await withTimeout(salvarLeadNoSheets(),1200);
 
-  // Dispara conversão do Google Ads ANTES de abrir o WhatsApp
-  if (typeof gtag === 'function') {
-    gtag('event', 'conversion', {
-      'send_to': 'AW-XXXXXXX/abcdEfghijklmnoPqR' // <-- substitua pelo ID do evento de conversão
-    });
-  }
+  const msg=`Olá, me chamo ${nome}! Minha conta de luz média é R$ ${conta.toFixed(2).replace('.',',')}${cidade?` em ${cidade}`:''}. Quero saber mais sobre a economia com o Conexão Green.`;
+  const url=`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
 
-  const cidade = getVal('cidade');
-  const msg = `Olá, me chamo ${nome}! Minha conta de luz média é R$ ${conta.toFixed(2).replace('.', ',')}${cidade ? ` em ${cidade}` : ''}. Quero saber mais sobre a economia com o Conexão Green.`;
-  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, '_blank');
+  gtagSendEvent(url, conta);
 });
 </script>
 
