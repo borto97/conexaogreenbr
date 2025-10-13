@@ -923,6 +923,85 @@ document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
   gtagSendEvent(url, conta);
 });
 </script>
+<script>
+// ========= FUNIL DE EVENTOS (GA4) + LOG OPCIONAL NO SHEETS =========
+
+// Log leve no Sheets (opcional; ajuda a diagnosticar gargalos)
+function logEvento(tipo, extra = {}) {
+  try {
+    const body = new URLSearchParams({
+      tipo, // 'form_view' | 'form_start' | 'form_submit' | 'whatsapp_cta_click'
+      origem: 'LP Conexão Green - Evento',
+      utm_source: getUTM('utm_source'),
+      utm_medium: getUTM('utm_medium'),
+      utm_campaign: getUTM('utm_campaign'),
+      utm_term: getUTM('utm_term'),
+      utm_content: getUTM('utm_content'),
+      ts: new Date().toISOString(),
+      ...extra
+    });
+    fetch(WEB_APP_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body
+    });
+  } catch(_) {}
+}
+
+// 1) form_view: quando 50% do bloco/formulário entra na tela
+(function trackFormView(){
+  const alvo = document.querySelector('#fale-conosco') || document.querySelector('form');
+  if (!alvo) return;
+  let visto = false;
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(en=>{
+      if (!visto && en.isIntersecting && en.intersectionRatio >= 0.5){
+        visto = true;
+        if (typeof gtag==='function') gtag('event','form_view',{section:'fale_conosco'});
+        logEvento('form_view');
+        io.disconnect();
+      }
+    });
+  },{threshold:[0.5]});
+  io.observe(alvo);
+})();
+
+// 2) form_start: quando o usuário começa a digitar
+(function trackFormStart(){
+  const primeiroCampo = document.querySelector('#nome, input[name="nome"], #fone, input[name="fone"], #email, input[name="email"]');
+  if (!primeiroCampo) return;
+  let iniciou = false;
+  const handler = ()=>{
+    if (iniciou) return;
+    iniciou = true;
+    if (typeof gtag==='function') gtag('event','form_start',{section:'fale_conosco'});
+    logEvento('form_start');
+  };
+  primeiroCampo.addEventListener('input', handler, { once:true });
+})();
+
+// 3) form_submit: quando o usuário aciona o CTA (antes do envio)
+(function hookFormSubmitCTA(){
+  const btn = document.getElementById('ctaWhatsapp');
+  if (!btn) return;
+  btn.addEventListener('mousedown', ()=>{
+    const conta = (typeof getContaLeadNumber==='function') ? getContaLeadNumber() : 0;
+    if (typeof gtag==='function') gtag('event','form_submit',{method:'whatsapp', value: conta || 0});
+    logEvento('form_submit', { valor: String(conta || 0) });
+  });
+})();
+
+// 4) clique no WhatsApp: evento adicional (além do conversion_event_contact)
+(function hookWhatsClickExtra(){
+  const btn = document.getElementById('ctaWhatsapp');
+  if (!btn) return;
+  btn.addEventListener('click', ()=>{
+    const conta = (typeof getContaLeadNumber==='function') ? getContaLeadNumber() : 0;
+    if (typeof gtag==='function') gtag('event','whatsapp_cta_click',{ value: conta || 0 });
+    logEvento('whatsapp_cta_click', { valor: String(conta || 0) });
+  });
+})();
+</script>
 
 </body>
 </html>
