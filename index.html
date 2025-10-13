@@ -927,18 +927,25 @@ document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
 // ========= FUNIL DE EVENTOS (GA4) + LOG OPCIONAL NO SHEETS =========
 
 // Log leve no Sheets (opcional; ajuda a diagnosticar gargalos)
-function logEvento(tipo, extra = {}) {
+function logEvento(nomeEvento, extra = {}) {
   try {
     const body = new URLSearchParams({
-      tipo, // 'form_view' | 'form_start' | 'form_submit' | 'whatsapp_cta_click'
-      origem: 'LP Conexão Green - Evento',
-      utm_source: getUTM('utm_source'),
-      utm_medium: getUTM('utm_medium'),
-      utm_campaign: getUTM('utm_campaign'),
-      utm_term: getUTM('utm_term'),
-      utm_content: getUTM('utm_content'),
-      ts: new Date().toISOString(),
-      ...extra
+      // mapeia para os nomes do cabeçalho da planilha "Leads"
+      'Nome': `[Evento] ${nomeEvento}`,       // aparece na coluna Nome
+      'WhatsApp': '',                         // vazio
+      'E-mail': '',                           // vazio
+      'Cidade': '',                           // vazio
+      'Conta (R$)': extra.valor || '',        // se enviar valor, cai aqui
+      'Economia/mês': '',
+      'Economia/ano': '',
+      'Origem': 'LP Conexão Green - Evento',
+      'utm_source': getUTM('utm_source'),
+      'utm_medium': getUTM('utm_medium'),
+      'utm_campaign': getUTM('utm_campaign'),
+      'utm_term': getUTM('utm_term'),
+      'utm_content': getUTM('utm_content'),
+      'UserAgent': navigator.userAgent,
+      'ts': new Date().toISOString()          // se o script ignorar, tudo bem
     });
     fetch(WEB_APP_URL, {
       method:'POST', mode:'no-cors',
