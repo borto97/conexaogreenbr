@@ -853,6 +853,112 @@ function calcularEconomia(conta){
   return { economia, economiaAnual };
 }
 
+// ====== SIMULADOR: cálculo + gráfico + bindings ======
+
+// Lê o valor do input #conta (simulador)
+function getContaNumber(){
+  const el = document.getElementById('conta');
+  if(!el) return 0;
+  const raw = (el.value || '').trim();
+  let n = parseMoedaBR(raw);
+  const minAttr = parseFloat(el.getAttribute('min') || '0');
+  if (!isFinite(n) || n < 0) n = 0;
+  if (isFinite(minAttr) && n < minAttr) n = minAttr;
+  return n;
+}
+
+// Desenha o gráfico de economia acumulada em #chartEconomia, com rótulos nos pontos
+function drawChartEconomia(ecoMensal){
+  const svg = document.getElementById('chartEconomia');
+  if(!svg) return;
+
+  const w=600, h=180, pad=28, meses=MESES;
+  const pts = Array.from({length: meses+1}, (_,m)=>({ m, y: ecoMensal*m }));
+  const yMax = Math.max(1, pts[meses].y);
+  const sx = m => pad + (m/meses)*(w-2*pad);
+  const sy = y => h - pad - (y/yMax)*(h-2*pad);
+
+  const xTicks=[0,6,12,18,24];
+  const yTicks=[0,yMax*0.5,yMax];
+
+  // paths
+  let dLine='', dArea=`M ${sx(0)} ${sy(0)}`;
+  for(let i=0;i<pts.length;i++){
+    const {m,y}=pts[i], x=sx(m), yy=sy(y);
+    dLine += (i?` L ${x} ${yy}`:`M ${x} ${yy}`);
+    dArea += ` L ${x} ${yy}`;
+  }
+  dArea += ` L ${sx(meses)} ${h-pad} L ${sx(0)} ${h-pad} Z`;
+
+  // grid + eixos + rótulos dos eixos
+  const gridH = yTicks.map(v=>`<line x1="${pad}" y1="${sy(v)}" x2="${w-pad}" y2="${sy(v)}" stroke="rgba(255,255,255,.12)"/>`).join('');
+
+  // círculos e rótulos de valor em cada 6 meses
+  const dots = xTicks.map(m=>{
+    const x=sx(m), y=sy(ecoMensal*m);
+    const valor = formatBRL(ecoMensal*m);
+    // label acima do ponto, com retângulo de fundo pra legibilidade
+    return `
+      <circle cx="${x}" cy="${y}" r="3.5" fill="#10b981"></circle>
+      <rect x="${x-40}" y="${y-24}" rx="4" ry="4" width="80" height="16" fill="rgba(0,0,0,.45)"></rect>
+      <text x="${x}" y="${y-12}" text-anchor="middle" font-size="10" fill="#e5e7eb">${valor}</text>
+    `;
+  }).join('');
+
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = `
+    <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>
+    ${gridH}
+    <path d="${dArea}" fill="rgba(16,185,129,.18)"></path>
+    <path d="${dLine}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"></path>
+
+    ${dots}
+
+    <!-- eixos -->
+    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)"/>
+
+    <!-- labels dos eixos -->
+    <g font-size="10" fill="#cbd5e1">
+      ${xTicks.map(m=>`<text x="${sx(m)}" y="${h-pad+14}" text-anchor="middle">${m}m</text>`).join('')}
+      ${yTicks.map(v=>`<text x="${pad-6}" y="${sy(v)+4}" text-anchor="end">${formatBRL(v)}</text>`).join('')}
+    </g>
+  `;
+}
+
+// Atualiza textos do simulador e redesenha o gráfico
+function atualizarSimulador(){
+  const conta = getContaNumber();
+  const { economia, economiaAnual } = calcularEconomia(conta);
+
+  const set = (id, val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+
+  set('economia',      `${formatBRL(economia)}/mês`);
+  set('economiaAnual', `${formatBRL(economiaAnual)}/ano`);
+
+  // se existirem, atualiza também os comparativos
+  set('atualMensal',  formatBRL(conta));
+  set('atualAnual',   formatBRL(conta*12));
+  set('igreenMensal', formatBRL(conta - economia));
+  set('igreenAnual',  formatBRL((conta - economia)*12));
+  set('ecoMensal',    formatBRL(economia));
+  set('ecoAnual',     formatBRL(economiaAnual));
+
+  drawChartEconomia(economia);
+}
+
+// Bindings do input/botão do simulador
+document.getElementById('btn-simular')?.addEventListener('click', atualizarSimulador);
+document.getElementById('conta')?.addEventListener('input', atualizarSimulador);
+document.getElementById('conta')?.addEventListener('keyup', e=>{ if(e.key==='Enter') atualizarSimulador(); });
+document.getElementById('conta')?.addEventListener('blur', e=>{
+  const n = getContaNumber();
+  e.target.value = Math.round(n).toString();
+});
+
+// Primeira renderização
+atualizarSimulador();
+
 // === SALVAR LEAD ===
 function salvarLeadNoSheets(){
   const nome=getVal('nome');
