@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XZ5S8WP4H"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-0XZ5S8WP4H');
-</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Conexão Green — Economize 10% na conta de luz | Igreen</title>
@@ -815,6 +806,23 @@ footer .logo{ height:34px; opacity:.9 }
   </div>
 </footer>
 
+<!-- ================== GOOGLE (GA4 + ADS) ================== -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XZ5S8WP4H"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  // Inicialização
+  gtag('js', new Date());
+
+  // GA4 (Analytics)
+  gtag('config', 'G-0XZ5S8WP4H');
+
+  // Google Ads (Conversions)
+  gtag('config', 'AW-XXXXXXX'); // <-- substitua pelo seu ID de Ads
+</script>
+<!-- ================== /GOOGLE ================== -->
+
 <script>
 // === CONFIG ===
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbznBiO_6Iq8agDHXTHe56XsyCWOhJtQksU0yLdLQeTe1c5P2Cz0zYarOIvIG917lixyCw/exec';
@@ -901,7 +909,7 @@ function drawChartEconomia(ecoMensal){
     gridH += `<line class="chart-tick" x1="${pad}" y1="${gy}" x2="${w-pad}" y2="${gy}"></line>`;
   });
 
-  // dots em cada 6 meses (pode trocar para todos os meses se quiser)
+  // dots em cada 6 meses
   let dots = "";
   xTicks.forEach(m=>{
     const p = pts[m];
@@ -910,9 +918,7 @@ function drawChartEconomia(ecoMensal){
 
   // eixo + labels
   let axis = `
-    <!-- eixo X -->
     <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-    <!-- eixo Y -->
     <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
     <g class="chart-axis">
       ${xTicks.map(m=>`<text x="${sx(m)}" y="${h-pad+14}" text-anchor="middle">${m}m</text>`).join('')}
@@ -930,30 +936,26 @@ function drawChartEconomia(ecoMensal){
     ${axis}
   `;
 
-  // --- Tooltip interativo ---
+  // Tooltip interativo
   const tip = document.getElementById('chartTip');
   if(!tip) return;
 
-  const plotLeft = pad, plotRight = w - pad, plotTop = pad, plotBottom = h - pad;
+  const plotLeft = pad, plotRight = w - pad;
 
   function nearestMonthFromX(clientX){
-    // converte coordenada de tela p/ coord. SVG
     const bbox = svg.getBoundingClientRect();
     const x = (clientX - bbox.left) * (w / bbox.width);
-    // limita ao plot
     const clamped = Math.max(plotLeft, Math.min(plotRight, x));
     const ratio = (clamped - plotLeft) / (plotRight - plotLeft);
-    let m = Math.round(ratio * meses);
-    m = Math.max(0, Math.min(meses, m));
+    let m = Math.round(ratio * MESES);
+    m = Math.max(0, Math.min(MESES, m));
     return m;
   }
-
   function positionTip(clientX){
     const bbox = svg.getBoundingClientRect();
-    const x = clientX - bbox.left; // px na tela
+    const x = clientX - bbox.left;
     tip.style.left = `${x}px`;
   }
-
   svg.onmousemove = (e)=>{
     const m = nearestMonthFromX(e.clientX);
     const val = ecoMensal * m;
@@ -963,18 +965,17 @@ function drawChartEconomia(ecoMensal){
   };
   svg.onmouseleave = ()=>{ tip.style.display = 'none'; };
 }
+
 // === UI: ATUALIZAR SIMULADOR / CAMPOS ===
 function atualizarSimulador(){
   const conta = getContaNumber();
   const { economia, economiaAnual, igreenMensal, igreenAnual } = calcularEconomia(conta);
 
-  // blocos principais (já existentes)
   const elMes = document.getElementById('economia');
   const elAno = document.getElementById('economiaAnual');
   if (elMes) elMes.textContent = `${formatBRL(economia)}/mês`;
   if (elAno) elAno.textContent = `${formatBRL(economiaAnual)}/ano`;
 
-  // Antes x Depois (se existirem)
   const elAtualMensal = document.getElementById('atualMensal');
   const elAtualAnual  = document.getElementById('atualAnual');
   const elIgreenMensal= document.getElementById('igreenMensal');
@@ -989,7 +990,6 @@ function atualizarSimulador(){
   if (elEcoMensal)   elEcoMensal.textContent   = formatBRL(economia);
   if (elEcoAnual2)   elEcoAnual2.textContent   = formatBRL(economiaAnual);
 
-  // gráfico
   drawChartEconomia(economia);
 }
 
@@ -999,7 +999,7 @@ document.getElementById('conta')?.addEventListener('input', atualizarSimulador);
 document.getElementById('conta')?.addEventListener('keyup', e => { if(e.key==='Enter') atualizarSimulador(); });
 document.getElementById('conta')?.addEventListener('blur', (e)=>{
   const n = getContaNumber();
-  e.target.value = Math.round(n).toString(); // mantém numérico simples (ex.: 2000)
+  e.target.value = Math.round(n).toString();
 });
 
 // inicializa com o valor padrão do input
@@ -1012,8 +1012,8 @@ function salvarLeadNoSheets(){
   const email   = getVal('email');
   const cidade  = getVal('cidade');
 
-  const conta   = getContaLeadNumber();         // vem do form de lead
-  const { economia } = calcularEconomia(conta); // 10%
+  const conta   = getContaLeadNumber();
+  const { economia } = calcularEconomia(conta);
 
   const body = new URLSearchParams({
     nome,
@@ -1040,7 +1040,7 @@ function salvarLeadNoSheets(){
   });
 }
 
-// === CTA WHATSAPP: SALVA E ABRE CONVERSA ===
+// === CTA WHATSAPP: SALVA, MARCA CONVERSÃO E ABRE CONVERSA ===
 document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
   e.preventDefault();
 
@@ -1052,14 +1052,21 @@ document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
     return;
   }
 
+  // Salva o lead (não bloqueia mais que 1,2s)
   await withTimeout(salvarLeadNoSheets(), 1200);
+
+  // Dispara conversão do Google Ads ANTES de abrir o WhatsApp
+  if (typeof gtag === 'function') {
+    gtag('event', 'conversion', {
+      'send_to': 'AW-XXXXXXX/abcdEfghijklmnoPqR' // <-- substitua pelo ID do evento de conversão
+    });
+  }
 
   const cidade = getVal('cidade');
   const msg = `Olá, me chamo ${nome}! Minha conta de luz média é R$ ${conta.toFixed(2).replace('.', ',')}${cidade ? ` em ${cidade}` : ''}. Quero saber mais sobre a economia com o Conexão Green.`;
   window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, '_blank');
 });
 </script>
-
 
 </body>
 </html>
