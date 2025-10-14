@@ -993,7 +993,7 @@ function salvarLeadNoSheets(){
 /* === Snippet "Clique" (delayed navigation) — GA4 ===
    Envia o evento GA4 e depois navega/abre o WhatsApp */
 function gtagSendEvent(url, valueNum){
-  var callback = function(){ window.location.href = url; };
+  var callback = function(){ window.open(url, '_blank'); };
   if (typeof gtag === 'function'){
     gtag('event','conversion_event_contact',{
       event_callback: callback,
