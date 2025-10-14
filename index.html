@@ -1035,27 +1035,31 @@ document.getElementById('ctaWhatsapp')?.addEventListener('click', async (e)=>{
 // Log leve no Sheets (opcional; ajuda a diagnosticar gargalos)
 function logEvento(nomeEvento, extra = {}) {
   try {
+    // espelha o payload do salvarLeadNoSheets (mesmas chaves em minúsculas)
+    const contaNum = extra.valor ? Number(extra.valor) : 0;
+    const economiaMes = contaNum * (typeof TAXA === 'number' ? TAXA : 0);
+
     const body = new URLSearchParams({
-      // mapeia para os nomes do cabeçalho da planilha "Leads"
-      'Nome': `[Evento] ${nomeEvento}`,       // aparece na coluna Nome
-      'WhatsApp': '',                         // vazio
-      'E-mail': '',                           // vazio
-      'Cidade': '',                           // vazio
-      'Conta (R$)': extra.valor || '',        // se enviar valor, cai aqui
-      'Economia/mês': '',
-      'Economia/ano': '',
-      'Origem': 'LP Conexão Green - Evento',
-      'utm_source': getUTM('utm_source'),
-      'utm_medium': getUTM('utm_medium'),
-      'utm_campaign': getUTM('utm_campaign'),
-      'utm_term': getUTM('utm_term'),
-      'utm_content': getUTM('utm_content'),
-      'UserAgent': navigator.userAgent,
-      'ts': new Date().toISOString()          // se o script ignorar, tudo bem
+      nome: `[Evento] ${nomeEvento}`,       // cai na coluna "Nome"
+      fone: '',                             // em branco
+      email: '',                            // em branco
+      cidade: '',                           // em branco
+      conta: String(contaNum || ''),        // cai na coluna "Conta (R$)"
+      economiaMes: isFinite(economiaMes) ? economiaMes.toFixed(2) : '',
+      economiaAno: isFinite(economiaMes) ? (economiaMes*12).toFixed(2) : '',
+      origem: 'LP Conexão Green - Evento',
+      userAgent: navigator.userAgent,
+      utm_source: getUTM('utm_source'),
+      utm_medium: getUTM('utm_medium'),
+      utm_campaign: getUTM('utm_campaign'),
+      utm_term: getUTM('utm_term'),
+      utm_content: getUTM('utm_content')
     });
+
     fetch(WEB_APP_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
       body
     });
   } catch(_) {}
