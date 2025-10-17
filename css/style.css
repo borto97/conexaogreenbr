@@ -1,0 +1,322 @@
+/* =========================================================
+   1) THEME TOKENS (cores, raios, sombras)
+   ======================================================= */
+:root{
+  --green:      #24c33c;
+  --green-600:  #1ea534;
+  --black:      #0a0a0a;
+  --gray-900:   #111827;
+  --gray-700:   #374151;
+  --gray-500:   #6B7280;
+  --bg:         #0c0f0c;
+  --radius:     18px;
+  --shadow:     0 10px 30px rgba(0,0,0,.15);
+}
+
+/* =========================================================
+   2) BASE / RESET
+   ======================================================= */
+*{ box-sizing:border-box }
+html,body{
+  margin:0; padding:0;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:#111;
+  background:#fff; /* garante fundo claro quando não houver seção escura */
+}
+a{ color:inherit; text-decoration:none }
+.container{ width:100%; max-width:1120px; margin:0 auto; padding:0 20px }
+
+/* =========================================================
+   3) UTILITÁRIOS & ELEMENTOS REUTILIZÁVEIS
+   ======================================================= */
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--green); color:#fff; font-weight:700;
+  border:none; border-radius:999px; padding:14px 22px;
+  box-shadow:var(--shadow); cursor:pointer; transition:.25s;
+}
+.btn:hover{ transform:translateY(-1px); background:var(--green-600) }
+
+.badge{
+  display:inline-block; background:rgba(36,195,60,.15); color:var(--green-600);
+  padding:8px 12px; border-radius:999px; font-weight:700; font-size:12px; letter-spacing:.02em;
+}
+
+.btn-inline{
+  background:var(--green); color:#fff !important; font-weight:700;
+  border-radius:999px; padding:10px 18px; box-shadow:var(--shadow); transition:.25s;
+}
+.btn-inline:hover{ background:var(--green-600); transform:translateY(-1px) }
+
+.section{ padding:56px 0 }
+.section h2{ font-size:28px; margin:0 0 12px }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px }
+.card{
+  border:1px solid #eaecef; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+}
+.card h3{ margin:0 0 6px }
+.kpi{ font-size:34px; font-weight:800; color:var(--green-600) }
+
+/* =========================================================
+   4) HERO (capa)
+   ======================================================= */
+.hero{
+  position:relative; overflow:hidden;
+  background:
+    radial-gradient(1000px 600px at 80% -10%, rgba(36,195,60,.25), transparent),
+    linear-gradient(180deg,#f8fff9,#ffffff);
+}
+.hero-inner{
+  padding:80px 0 40px; display:grid; grid-template-columns:1.1fr .9fr; gap:28px; align-items:center;
+}
+.hero h1{ font-size:46px; line-height:1.05; margin:18px 0 10px; letter-spacing:-.02em }
+.hero p.lead{ font-size:18px; color:var(--gray-700); max-width:52ch }
+.logo{ height:46px }
+
+.hero-card{
+  background:#0f1a11; border:1px solid #163a1b; border-radius:var(--radius);
+  padding:22px; box-shadow:var(--shadow); color:#e8ffee;
+}
+.hero-card h3{ margin:0 0 10px; font-size:18px }
+.hero-list{ list-style:none; margin:0; padding:0; display:grid; gap:10px }
+.hero-list li{ display:flex; align-items:flex-start; gap:10px }
+
+.marcas{ display:flex; gap:24px; align-items:center; opacity:.9; flex-wrap:wrap; margin-top:18px }
+.marcas img{ height:40px }
+
+/* =========================================================
+   5) CALCULADORA / COMPARAÇÃO / GRÁFICO
+   ======================================================= */
+.calc{ display:grid; gap:14px } /* garante espaçamento quando empilhado */
+
+.hint{ color:#6b7280 }
+
+.compare{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  margin-top:14px;
+}
+.compare .col{
+  background:#0d1712; border:1px solid #14401b; border-radius:12px; padding:12px;
+}
+.compare .col.highlight{
+  background:#0c1b11; border-color:#0ea75a;
+  box-shadow:0 0 0 1px rgba(16,185,129,.15) inset, 0 8px 20px rgba(16,185,129,.08);
+}
+
+.pill{
+  display:inline-block; font-weight:700; font-size:12px; letter-spacing:.02em;
+  padding:6px 10px; border-radius:999px; margin-bottom:8px;
+}
+.pill-atual{ background:#fee2e2; color:#991b1b }
+.pill-igreen{ background:#dcfce7; color:#065f46 }
+.pill-economia{ background:#bbf7d0; color:#065f46 }
+
+.price{ display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-top:1px dashed rgba(255,255,255,.06) }
+.price:first-of-type{ border-top:none }
+.price span{ font-size:12px; color:#9bdab0 }
+.price strong{ font-size:18px; font-weight:800; color:#e7fff1 }
+
+/* Painel único que agrupa cards + gráfico */
+.eco-panel{
+  background:#0a1510;
+  border:1px solid #133a1b;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+/* Grade responsiva dos cards (Antes / Igreen / Economia) */
+.eco-grid{
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom:12px;
+}
+
+/* Cartões internos */
+.eco-card{
+  background:#0d1712;
+  border:1px solid #14401b;
+  border-radius:12px;
+  padding:12px;
+}
+.eco-card.eco-highlight{
+  background:#0c1b11;
+  border-color:#0ea75a;
+  box-shadow:0 0 0 1px rgba(16,185,129,.15) inset, 0 8px 20px rgba(16,185,129,.08);
+}
+
+/* Gráfico dentro do painel */
+.eco-chart{
+  background:#0b1410;
+  border:1px solid #133a1b;
+  border-radius:12px;
+  padding:10px;
+  position:relative; /* para o tooltip */
+}
+.chart-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; color:#dffbe6 }
+.chart-head small{ color:#9be7b2 }
+.chart-legend{ display:flex; align-items:center; gap:8px; margin-top:6px; color:#c7f5d6; font-size:12px }
+.dot{ width:10px; height:10px; border-radius:50%; display:inline-block }
+.dot-eco{ background:#10b981 }
+svg#chartEconomia{ width:100%; height:160px; display:block }
+
+/* Tooltip do gráfico (usado pelo #chartTip) */
+.chart-tooltip{
+  position:absolute; pointer-events:none;
+  background:#0b1410; border:1px solid #133a1b; color:#dffbe6;
+  padding:6px 8px; border-radius:8px; font-size:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transform:translate(-50%,-120%); white-space:nowrap;
+  display:none;
+}
+.chart-axis text{ fill:rgba(255,255,255,.7); font-size:11px }
+.chart-tick{ stroke:rgba(255,255,255,.12); stroke-width:1 }
+.chart-dot{ fill:#10b981 }
+
+/* Mobile refinements */
+@media (max-width: 420px){
+  .eco-panel{ padding:12px }
+  .price strong{ font-size:17px }
+}
+
+/* =========================================================
+   6) PASSO A PASSO / DOCUMENTOS
+   ======================================================= */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px }
+.step{
+  border:1px dashed #cfe9d4; border-radius:16px; padding:18px;
+  background:linear-gradient(to bottom, #f5fff7, #fff);
+}
+.step span{
+  display:inline-grid; place-items:center; height:34px; width:34px; border-radius:50%;
+  background:var(--green); color:#fff; font-weight:800; margin-bottom:8px;
+}
+
+.docs{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px }
+.docs li{ padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff }
+ul{ margin:0; padding-left:20px }
+
+/* =========================================================
+   7) FORM / CONTATO
+   ======================================================= */
+.form{ background:#0c1110; border-top:1px solid #122618; color:#e6fff0 }
+.form .inner{
+  display:grid; grid-template-columns:1.1fr .9fr; gap:26px; align-items:center; padding:48px 0;
+}
+.form .panel{
+  background:#0f1a11; border:1px solid #163a1b; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+}
+.form label{ display:block; font-size:14px; margin-bottom:6px; color:#b7f3c6 }
+.form input, .form select{
+  width:100%; padding:14px; border-radius:12px; border:1px solid #184b22; background:#0b1210; color:#e6fff0; margin-bottom:12px;
+}
+.form small{ color:#9be7b2 }
+
+/* =========================================================
+   8) FAQ
+   ======================================================= */
+.faq details{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px }
+.faq details+details{ margin-top:10px }
+.faq summary{ font-weight:700; cursor:pointer }
+
+/* =========================================================
+   9) HEADER & FOOTER
+   ======================================================= */
+header.header-bar{
+  background:#0a0f0b; color:#b9e7c4; width:100%;
+}
+header.header-bar .header-inner{
+  display:flex; justify-content:space-between; align-items:center; padding:14px 0;
+}
+header.header-bar a{ color:#dfffe4 }
+header.header-bar a:hover{ color:#24c33c }
+
+footer{
+  padding:28px 0; background:#0a0f0b; color:#b9e7c4;
+}
+footer .row{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap }
+footer .logo{ height:34px; opacity:.9 }
+
+/* =========================================================
+   10) SEÇÃO RENTABILIDADE (transparência)
+   ======================================================= */
+.rentabilidade{
+  background:#f8fff9; color:var(--gray-900); padding:56px 0; border-top:1px solid #e3efe4;
+}
+.rentabilidade h2{
+  text-align:center; font-size:28px; margin:0 0 18px;
+}
+.rentabilidade p.lead{
+  text-align:center; max-width:72ch; margin:0 auto 36px; font-size:17px; color:var(--gray-700);
+}
+.rentabilidade .grid-3{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:30px;
+}
+.rentabilidade .item{
+  background:#fff; border:1px solid #e5e7eb; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+}
+.rentabilidade .item h3{ color:var(--green-600); font-size:18px; margin:0 0 6px }
+.rentabilidade .item p{ color:var(--gray-700) }
+.rentabilidade .callout{
+  background:rgba(36,195,60,.08); border-left:4px solid var(--green);
+  border-radius:var(--radius); padding:16px 18px; margin:28px 0; font-weight:500;
+}
+.rentabilidade .faq-bridge{ text-align:center; margin-top:20px }
+.rentabilidade .faq-bridge a{ color:var(--green-600); font-weight:600; margin:0 6px; text-decoration:underline }
+.rentabilidade .disclaimer{ text-align:center; font-size:14px; color:var(--gray-500); margin-top:24px }
+
+/* 10.1) RENTABILIDADE - BLOCO EXPLICATIVO */
+.rentabilidade .inner{ max-width:980px }
+.rentabilidade h2{ line-height:1.2 }
+.rentabilidade .tldr{
+  background:#0f172a; color:#fff; padding:14px 16px; border-radius:14px;
+  font-size:.98rem; margin:12px 0 18px; box-shadow:0 6px 18px rgba(2,6,23,.15);
+}
+.rentabilidade .equacao{
+  display:flex; align-items:stretch; gap:10px; flex-wrap:wrap; margin:8px 0 4px;
+}
+.rentabilidade .equacao .bloco{
+  flex:1 1 220px; border-radius:16px; padding:14px 16px;
+  background:#f8fafc; border:1px solid #e2e8f0; box-shadow:0 4px 14px rgba(15,23,42,.07);
+}
+.rentabilidade .equacao .rotulo{ display:block; font-size:.8rem; color:#475569; margin-bottom:6px }
+.rentabilidade .equacao .valor{ font-weight:700; font-size:1.05rem }
+.rentabilidade .equacao .tarifa{ background:#fff }
+.rentabilidade .equacao .preco-igreen{ background:#ecfeff; border-color:#a5f3fc }
+.rentabilidade .equacao .margem{ background:#f0fdf4; border-color:#bbf7d0 }
+.rentabilidade .equacao .seta,
+.rentabilidade .equacao .mais{
+  display:flex; align-items:center; justify-content:center; font-weight:800; padding:0 6px; color:#334155;
+}
+
+/* Nota abaixo da equação */
+.rentabilidade .nota-equacao{
+  display:block; line-height:1.5; font-size:.95rem; color:#334155;
+  margin:8px 2px 16px; max-width:980px; text-align:left;
+}
+.rentabilidade .nota-equacao .ponto{
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:#10b981; margin-right:8px; position:relative; top:-1px;
+}
+
+/* =========================================================
+   11) RESPONSIVO
+   ======================================================= */
+@media (max-width: 980px){
+  .hero-inner{ grid-template-columns:1fr }
+  .calc{ grid-template-columns:1fr }
+  .steps{ grid-template-columns:1fr 1fr }
+  .grid-3{ grid-template-columns:1fr }
+
+  .container{ padding-left:18px; padding-right:18px }
+  header.header-bar .header-inner{ padding-left:18px; padding-right:18px }
+
+  .form .inner{ grid-template-columns:1fr }
+  .form .panel,
+  .form .inner > div:last-child{ padding-left:18px; padding-right:18px }
+
+  .rentabilidade{ padding:40px 0 }
+  .rentabilidade .grid-3{ grid-template-columns:1fr; gap:16px }
+  .rentabilidade p.lead{ max-width:none; margin-bottom:28px }
+}
