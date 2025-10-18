@@ -243,8 +243,141 @@
   </ul>
 </section>
 
+<!-- NOVA SEÇÃO DE ENVIO DE DOCUMENTOS -->
+<section id="envio-documentos" class="section container">
+  <h2>Envio de Documentos para Cadastro</h2>
+  <p>Preencha os campos abaixo e envie seus documentos de forma 100% segura. 
+  Todos os dados são protegidos conforme a <strong>Lei Geral de Proteção de Dados (LGPD)</strong>.</p>
+
+  <!-- iframe oculto que recebe o POST -->
+  <iframe name="upload_iframe" id="upload_iframe" style="display:none"></iframe>
+
+  <form id="cadastroDocs"
+        action="https://script.google.com/macros/s/AKfycbx8Ibig3b5CrUeezu331rrmD1rDhm9ZePnRH_Wa8P2oPF9Jj3BaqFvrtgEBRUBHP4v8/exec"
+        method="POST"
+        enctype="multipart/form-data"
+        target="upload_iframe"
+        style="max-width:600px;margin:auto">
+
+    <!-- Identificação -->
+    <label>Nome completo do titular*</label>
+    <input type="text" name="nome" required placeholder="Digite seu nome completo">
+
+    <label>E-mail*</label>
+    <input type="email" name="email" required placeholder="exemplo@email.com">
+
+    <label>Celular com DDD*</label>
+    <input type="tel" name="celular" pattern="\(\d{2}\)\s?\d{4,5}-?\d{4}"
+           required placeholder="(51) 99999-9999">
+
+    <hr style="margin:20px 0">
+
+    <!-- Tag PJ (mesmo layout dos demais) -->
+    <label>Conta de luz está em nome de uma Pessoa Jurídica (PJ)?</label>
+    <select name="is_pj" id="is_pj" aria-label="Conta em nome de PJ">
+      <option value="nao" selected>Não</option>
+      <option value="sim">Sim</option>
+    </select>
+    <small style="display:block;margin:6px 0 14px;color:#6B7280">Se “Sim”, anexe o Contrato Social abaixo.</small>
+
+    <!-- Campos Opcionais (mesmo layout) -->
+    <label>Login da distribuidora <span style="font-weight:400;color:#6B7280">(opcional)</span></label>
+    <input type="text" name="dist_login" placeholder="Usuário / CPF / E-mail cadastrado na distribuidora" autocomplete="username">
+
+    <label>Senha da distribuidora <span style="font-weight:400;color:#6B7280">(opcional)</span></label>
+    <input type="password" name="dist_senha" placeholder="Senha da conta da distribuidora" autocomplete="current-password">
+
+    <!-- Arquivos obrigatórios -->
+    <label>Frente do documento de identidade (RG ou CNH)*</label>
+    <input type="file" name="doc_frente" accept="image/*,.pdf" required>
+
+    <label>Verso do documento de identidade*</label>
+    <input type="file" name="doc_verso" accept="image/*,.pdf" required>
+
+    <label>Conta de luz recente (PDF ou imagem)*</label>
+    <input type="file" name="conta_luz" accept="image/*,.pdf" required>
+
+    <!-- Campo condicional de PJ (aparece só se “Sim”) -->
+    <div id="pj_extra" style="display:none">
+      <label>Contrato Social (PDF ou imagem)</label>
+      <input type="file" id="contrato_social" name="contrato_social" accept="image/*,.pdf">
+      <small style="display:block;margin-top:6px;color:#6B7280">Obrigatório apenas se “PJ = Sim”.</small>
+    </div>
+
+    <!-- Consentimento LGPD -->
+    <div class="consent-wrap" style="margin-top:18px">
+      <input type="checkbox" id="aceiteLGPD" name="consent" value="true" required>
+      <label for="aceiteLGPD" class="consent-text">
+        Li e aceito os
+        <button type="button" id="abrir-termos" class="link-like">Termos de Uso e Política de Privacidade (LGPD)</button>.
+      </label>
+
+      <input type="hidden" name="consent_ts" id="consent_ts">
+      <input type="hidden" name="terms_version" value="TERMS-LGPD-v1-2025-10-17">
+      <input type="hidden" name="ua" id="ua">
+      <input type="hidden" name="ref" id="ref">
+    </div>
+
+    <button type="submit" class="btn">Enviar documentos</button>
+
+    <!-- Campos ocultos (fallback base64) -->
+    <input type="hidden" name="b64_doc_frente">
+    <input type="hidden" name="b64_doc_verso">
+    <input type="hidden" name="b64_conta_luz">
+    <input type="hidden" name="b64_contrato_social">
+  </form>
+
+  <!-- Modal LGPD -->
+  <dialog id="dlg-termos">
+    <article style="max-width:720px">
+      <header style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h3 style="margin:0">Termos de Uso e Política de Privacidade (LGPD)</h3>
+        <button type="button" id="fechar-termos" aria-label="Fechar">×</button>
+      </header>
+      <div style="max-height:70vh;overflow:auto">
+        <p><strong>Controladora:</strong> Conexão Green (conexaogreenbr@gmail.com).</p>
+        <h4>1. Finalidade</h4>
+        <p>Cadastro e verificação de titularidade para adesão ao benefício de energia com desconto, contato de suporte e confirmação.</p>
+        <h4>2. Dados coletados</h4>
+        <ul>
+          <li>Nome, e-mail e celular com DDD.</li>
+          <li>Frente e verso de documento de identidade (RG/CNH) e conta de luz recente.</li>
+          <li>Opcionalmente, login e senha da distribuidora para consulta de consumo.</li>
+          <li>Quando aplicável (PJ), Contrato Social.</li>
+          <li>Metadados técnicos do envio (data/horário e nomes dos arquivos).</li>
+        </ul>
+        <h4>3. Bases legais</h4>
+        <p>Consentimento (art. 7º, I) e execução de procedimentos preliminares ao contrato (art. 7º, V) da LGPD.</p>
+        <h4>4. Uso e compartilhamento</h4>
+        <p>Uso exclusivo para análise de elegibilidade, comprovação de titularidade e formalização.
+           Compartilhamento somente com parceiros operacionais necessários, vinculados às mesmas finalidades.</p>
+        <h4>5. Segurança e armazenamento</h4>
+        <p>Arquivos armazenados em Google Drive com acesso restrito; medidas técnicas e administrativas razoáveis para proteção contra acessos não autorizados e incidentes.</p>
+        <h4>6. Retenção</h4>
+        <p>Dados mantidos pelo período necessário à análise/contratação e pelos prazos legais; depois, exclusão ou anonimização.</p>
+        <h4>7. Direitos do titular</h4>
+        <p>Acesso, correção, anonimização/bloqueio/eliminação, portabilidade, informações sobre compartilhamento e
+           <strong>revogação do consentimento</strong>. Contato: <a href="mailto:conexaogreenbr@gmail.com">conexaogreenbr@gmail.com</a>.</p>
+        <h4>8. Atualizações</h4>
+        <p>Podemos atualizar este documento; a versão vigente é identificada pelo campo “versão de termos”.</p>
+        <p>Ao marcar o checkbox, você declara ciência e concordância com o tratamento descrito.</p>
+      </div>
+      <footer style="display:flex;justify-content:flex-end;gap:8px">
+        <button type="button" id="fechar-termos-2" class="btn">Fechar</button>
+      </footer>
+    </article>
+  </dialog>
+</section>
+
+<!-- Termos LGPD -->
+<div id="termos-lgpd" style="display:none">
+  <h3>Termos de Uso e Consentimento – LGPD</h3>
+  <p>Ao enviar seus dados e documentos, você consente com o tratamento das informações pela Conexão Green e seus parceiros exclusivamente para a finalidade de cadastro e verificação de titularidade para adesão ao benefício de energia com desconto. Os dados são armazenados de forma segura e poderão ser excluídos mediante solicitação. Em conformidade com a Lei nº 13.709/2018 (LGPD).</p>
+</div>
+
+
 <section class="form" id="fale-conosco">
-  <div class="container inner" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:40px">
+  <div class="container inner" style="https://script.google.com/macros/s/AKfycbxLds3lC-jFRyUgHFyfJHdLviihZzmHxWtktBnztYNO/dev">
 
     <!-- Coluna esquerda: formulário -->
     <div class="panel" style="flex:1 1 320px;max-width:480px">
@@ -468,5 +601,97 @@
     </div>
   </div>
 </footer>
+
+<!-- Modal de Termos (LGPD) -->
+<div id="modal-termos" class="modal" aria-hidden="true" role="dialog" aria-labelledby="termos-titulo" aria-modal="true">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-dialog" role="document">
+    <header class="modal-header">
+      <h3 id="termos-titulo">Termos de Uso e Política de Privacidade (LGPD)</h3>
+      <button type="button" class="modal-close" aria-label="Fechar" title="Fechar" data-close-modal>×</button>
+    </header>
+    <div class="modal-body">
+      <p><strong>Controladora:</strong> Conexão Green (conexaogreenbr@gmail.com).</p>
+
+      <h4>1. Finalidade do tratamento</h4>
+      <p>Trataremos os seus dados para realizar o <strong>cadastro e a verificação de titularidade</strong> necessários à adesão ao benefício de energia com desconto, além de eventuais contatos de suporte e confirmação.</p>
+
+      <h4>2. Dados pessoais coletados</h4>
+      <ul>
+        <li>Identificadores e contato: nome completo, e-mail, celular com DDD.</li>
+        <li>Documentos enviados: frente e verso de documento de identidade (RG ou CNH) e conta de luz recente.</li>
+        <li>Metadados técnicos do envio (data/horário e nome dos arquivos).</li>
+      </ul>
+
+      <h4>3. Bases legais</h4>
+      <p>Tratamos os dados com fundamento em: (i) <strong>consentimento</strong> do titular (art. 7º, I, LGPD) e (ii) <strong>execução de procedimentos preliminares</strong> relacionados a contrato (art. 7º, V, LGPD).</p>
+
+      <h4>4. Uso e compartilhamento</h4>
+      <p>Os dados serão usados exclusivamente para análise de elegibilidade, comprovação de titularidade e formalização do benefício. Poderão ser compartilhados com <strong>parceiros operacionais e comerciais</strong> estritamente necessários para a contratação, sempre vinculados às mesmas finalidades.</p>
+
+      <h4>5. Armazenamento e segurança</h4>
+      <p>Os arquivos são armazenados de forma restrita em <strong>Google Drive</strong> na pasta “documentos para cadastro”, com controles de acesso por conta da Conexão Green. Adotamos medidas técnicas e administrativas razoáveis para proteger os dados contra acessos não autorizados, incidentes e vazamentos.</p>
+
+      <h4>6. Retenção e descarte</h4>
+      <p>Os dados serão mantidos pelo período necessário à análise/contratação e por prazos legais/regulatórios aplicáveis. Após esse período, serão excluídos ou anonimizados de forma segura.</p>
+
+      <h4>7. Direitos do titular</h4>
+      <p>Você pode solicitar: confirmação e acesso; correção; anonimização, bloqueio ou eliminação; portabilidade; informações sobre compartilhamentos; e <strong>revogação do consentimento</strong> a qualquer tempo. Para exercer seus direitos, contate: <a href="mailto:conexaogreenbr@gmail.com">conexaogreenbr@gmail.com</a>.</p>
+
+      <h4>8. Contato e DPO</h4>
+      <p>Dúvidas sobre privacidade: <a href="mailto:conexaogreenbr@gmail.com">conexaogreenbr@gmail.com</a>.</p>
+
+      <h4>9. Atualizações destes termos</h4>
+      <p>Podemos atualizar este documento para refletir mudanças legais ou operacionais. A versão vigente estará disponível neste mesmo local.</p>
+
+      <p style="margin-top:16px">Ao marcar o checkbox “Li e aceito…”, você declara ciência e concordância com o tratamento descrito acima.</p>
+    </div>
+    <footer class="modal-footer">
+      <button type="button" class="btn" data-close-modal>Fechar</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const abrir = document.getElementById('abrir-termos');
+    const modal = document.getElementById('modal-termos');
+    const focusableSel = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    let lastActive = null;
+
+    function openModal() {
+      lastActive = document.activeElement;
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      const first = modal.querySelector(focusableSel);
+      first && first.focus();
+    }
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      lastActive && lastActive.focus();
+    }
+
+    abrir.addEventListener('click', openModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('data-close-modal') || e.target.classList.contains('modal')) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeModal();
+      // foco preso no modal
+      if (e.key === 'Tab') {
+        const f = [...modal.querySelectorAll(focusableSel)];
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+        else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+      }
+    });
+  })();
+</script>
+
 </body>
 </html>
