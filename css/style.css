@@ -320,3 +320,91 @@ footer .logo{ height:34px; opacity:.9 }
   .rentabilidade .grid-3{ grid-template-columns:1fr; gap:16px }
   .rentabilidade p.lead{ max-width:none; margin-bottom:28px }
 }
+
+#envio-documentos {
+  background: #f9fafb;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 24px;
+}
+#envio-documentos input, #envio-documentos button {
+  width: 100%;
+  margin-bottom: 14px;
+}
+#envio-documentos h2 {
+  color: var(--green-600);
+  text-align: center;
+}
+
+/* link com cara de link */
+.link-like {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: #169c36; text-decoration: underline; font: inherit;
+}
+
+/* modal */
+.modal { position: fixed; inset: 0; display: none; }
+.modal.is-open { display: block; }
+.modal-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.45);
+}
+.modal-dialog {
+  position: relative; max-width: 720px; width: calc(100% - 24px);
+  margin: 6vh auto; background: #fff; border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25); overflow: hidden;
+}
+.modal-header, .modal-footer { padding: 14px 18px; background: #f5f7f9; }
+.modal-body { padding: 18px; max-height: 70vh; overflow: auto; }
+.modal-close {
+  background: none; border: 0; font-size: 22px; line-height: 1;
+  cursor: pointer; margin-left: auto;
+}
+.modal-header { display: flex; align-items: center; gap: 8px; }
+.modal-header h3 { margin: 0; }
+
+dialog footer {
+  background: #fff;             /* fundo branco */
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* ===== Consentimento LGPD (força alinhamento) ===== */
+.consent-wrap{
+  grid-column: 1 / -1;              /* ocupa todas as colunas do grid do form */
+  display: flex !important;          /* ignora qualquer grid/flex herdado */
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  margin: 18px 0 12px !important;
+  text-align: left !important;
+}
+
+.consent-wrap input[type="checkbox"]{
+  width: 18px !important;
+  height: 18px !important;
+  display: inline-block !important;
+  flex: 0 0 18px !important;
+  margin: 0 !important;
+  accent-color: var(--green, #16a34a);
+}
+
+.consent-wrap .consent-text{
+  display: inline-flex !important;   /* mantém texto + link juntos */
+  align-items: center;
+  gap: 6px;
+  line-height: 1.5;
+  font-size: 15px;
+  white-space: normal;               /* pode quebrar se faltar espaço */
+  margin: 0 !important;
+}
+
+.consent-wrap .link-like{
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--green-600, #169c36); text-decoration: underline; font: inherit;
+  white-space: nowrap;               /* não quebra “(LGPD)” */
+}
+.consent-wrap .link-like:hover{ color: var(--green, #16a34a); }
