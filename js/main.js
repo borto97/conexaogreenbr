@@ -288,3 +288,146 @@ function logEvento(nomeEvento, extra = {}) {
     logEvento('whatsapp_cta_click', { valor: String(conta || 0) });
   });
 })();
+
+(function () {
+  const form   = document.getElementById('cadastroDocs');
+  const btn    = form.querySelector('button[type="submit"]');
+
+  // --- UI: sucesso inline (evita mil cliques)
+  let successEl = document.getElementById('upload_success');
+  if (!successEl) {
+    successEl = document.createElement('div');
+    successEl.id = 'upload_success';
+    successEl.style.cssText = 'display:none;margin:12px 0;padding:10px;border:1px solid #1f5f2f;border-radius:10px;background:#0e1f12;color:#c7f3d0';
+    successEl.textContent = '✅ Documentos enviados com sucesso!';
+    form.appendChild(successEl);
+  }
+  const showSuccess = (msg) => {
+    successEl.textContent = msg || '✅ Documentos enviados com sucesso!';
+    successEl.style.display = 'block';
+    setTimeout(()=> successEl.style.display='none', 7000);
+  };
+
+  // --- PJ toggle
+  const isPJ = document.getElementById('is_pj');
+  const pjExtra = document.getElementById('pj_extra');
+  const contratoInput = document.getElementById('contrato_social');
+
+  function updatePJ(){
+    const show = (isPJ && isPJ.value === 'sim');
+    if (pjExtra) pjExtra.style.display = show ? 'block' : 'none';
+    if (contratoInput) {
+      contratoInput.required = !!show;
+      if (!show) contratoInput.value = '';
+    }
+  }
+  if (isPJ) {
+    isPJ.addEventListener('change', updatePJ);
+    updatePJ();
+  }
+
+  // --- Base64 helper
+  const toDataURL = (file) => new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+
+  let submitTimeout = null;
+
+  // --- Marca se recebemos retorno do GAS
+  let gotMessage = false;
+
+  // --- Submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    try {
+      const f1 = form.querySelector('input[name="doc_frente"]').files[0];
+      const f2 = form.querySelector('input[name="doc_verso"]').files[0];
+      const f3 = form.querySelector('input[name="conta_luz"]').files[0];
+      const pjSim = (isPJ && isPJ.value === 'sim');
+      const f4 = contratoInput?.files?.[0];
+
+      if (!f1 || !f2 || !f3) { alert('Selecione os três arquivos obrigatórios.'); return; }
+      if (pjSim && !f4) { alert('Você indicou PJ: anexe o Contrato Social.'); return; }
+
+      // trava botão + feedback
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      // Preenche fallback base64 (vai junto do multipart; o GAS usa e.files se chegar)
+      form.querySelector('input[name="b64_doc_frente"]').value = await toDataURL(f1);
+      form.querySelector('input[name="b64_doc_verso"]').value  = await toDataURL(f2);
+      form.querySelector('input[name="b64_conta_luz"]').value  = await toDataURL(f3);
+      const b64Contrato = form.querySelector('input[name="b64_contrato_social"]');
+      b64Contrato.value = (pjSim && f4) ? await toDataURL(f4) : '';
+
+      gotMessage = false; // reset da flag
+
+      // failsafe anti-trava (↑ 15s) — se nada chegar, assume SUCESSO
+clearTimeout(submitTimeout);
+submitTimeout = setTimeout(() => {
+  if (!gotMessage) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar documentos';
+    form.reset();
+    updatePJ();
+    showSuccess('✅ Documentos enviados!'); // sucesso otimista
+    console.warn('[upload] Timeout sem postMessage; sucesso otimista exibido.');
+  }
+}, 15000);
+
+
+      // envia de verdade (multipart + fallback preenchido)
+      form.submit();
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false; 
+      btn.textContent = 'Enviar documentos';
+      alert('Erro ao preparar os arquivos. Tente novamente.');
+    }
+  });
+
+  // --- Fallback: se o iframe carregar mas o postMessage não chegar, considera sucesso
+  iframe.addEventListener('load', () => {
+    if (!gotMessage && btn.disabled) {
+      clearTimeout(submitTimeout);
+      btn.disabled = false;
+      btn.textContent = 'Enviar documentos';
+      form.reset();
+      updatePJ();
+      showSuccess('✅ Documentos enviados!'); // sucesso genérico
+    }
+  });
+
+  // --- Retorno do Apps Script (iframe → postMessage)
+  window.addEventListener('message', (ev) => {
+    try {
+      clearTimeout(submitTimeout);
+      gotMessage = true;
+
+      let data = ev.data;
+      if (typeof data === 'string') { try { data = JSON.parse(data); } catch(_) {} } // compat c/ versões antigas
+
+      // reset UI
+      btn.disabled = false; 
+      btn.textContent = 'Enviar documentos';
+      form.reset();
+      updatePJ(); // re-esconde PJ e remove required
+
+      if (data && data.ok && data.saved_count >= 1) {
+        showSuccess(`✅ Documentos enviados! (${data.saved_count} arquivo(s) salvo(s))`);
+      } else {
+        const msg = (data && data.error) ? data.error : 'Nenhum arquivo salvo.';
+        alert('⚠️ Houve um problema: ' + msg);
+      }
+    } catch (e) {
+      clearTimeout(submitTimeout);
+      btn.disabled = false; 
+      btn.textContent = 'Enviar documentos';
+      alert('Erro ao processar retorno. Tente novamente.');
+    }
+  });
+})();
