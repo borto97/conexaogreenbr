@@ -267,12 +267,15 @@
     <input type="email" name="email" required placeholder="exemplo@email.com">
 
     <label>Celular com DDD*</label>
-    <input type="tel" name="celular" pattern="\(\d{2}\)\s?\d{4,5}-?\d{4}"
-           required placeholder="(51) 99999-9999">
+    <input type="tel" name="celular" id="celular"
+       required
+       pattern="^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$"
+       placeholder="(51) 99999-9999"
+       maxlength="15">
 
     <hr style="margin:20px 0">
 
-    <!-- Tag PJ (mesmo layout dos demais) -->
+    <!-- Tag PJ -->
     <label>Conta de luz está em nome de uma Pessoa Jurídica (PJ)?</label>
     <select name="is_pj" id="is_pj" aria-label="Conta em nome de PJ">
       <option value="nao" selected>Não</option>
@@ -280,28 +283,47 @@
     </select>
     <small style="display:block;margin:6px 0 14px;color:#6B7280">Se “Sim”, anexe o Contrato Social abaixo.</small>
 
-    <!-- Campos Opcionais (mesmo layout) -->
-    <label>Login da distribuidora <span style="font-weight:400;color:#6B7280">(opcional)</span></label>
-    <input type="text" name="dist_login" placeholder="Usuário / CPF / E-mail cadastrado na distribuidora" autocomplete="username">
+    <!-- BOTÃO DOS OPCIONAIS -->
+    <button type="button" class="opt-toggle">
+      ⚙️ Adicionar dados da distribuidora (opcional para emissão de fatura)
+    </button>
 
-    <label>Senha da distribuidora <span style="font-weight:400;color:#6B7280">(opcional)</span></label>
-    <input type="password" name="dist_senha" placeholder="Senha da conta da distribuidora" autocomplete="current-password">
+    <!-- CAMPOS OPCIONAIS RECOLHÍVEIS -->
+    <div id="opc_fields" class="optional-fields">
+      <label>Login da distribuidora (opcional)</label>
+      <input type="text" name="dist_login" placeholder="Usuário / CPF / E-mail" autocomplete="username">
+
+      <label>Senha da distribuidora (opcional)</label>
+      <input type="password" name="dist_senha" placeholder="Senha da conta" autocomplete="current-password">
+    </div>
 
     <!-- Arquivos obrigatórios -->
     <label>Frente do documento de identidade (RG ou CNH)*</label>
-    <input type="file" name="doc_frente" accept="image/*,.pdf" required>
+    <div class="file-drop" id="wrap_doc_frente">
+      <span class="file-label">📄 Selecione ou arraste o arquivo</span>
+      <input type="file" name="doc_frente" id="doc_frente" accept="image/*,.pdf" required>
+    </div>
 
     <label>Verso do documento de identidade*</label>
-    <input type="file" name="doc_verso" accept="image/*,.pdf" required>
+    <div class="file-drop" id="wrap_doc_verso">
+      <span class="file-label">📄 Selecione ou arraste o arquivo</span>
+      <input type="file" name="doc_verso" id="doc_verso" accept="image/*,.pdf" required>
+    </div>
 
     <label>Conta de luz recente (PDF ou imagem)*</label>
-    <input type="file" name="conta_luz" accept="image/*,.pdf" required>
+    <div class="file-drop" id="wrap_conta_luz">
+      <span class="file-label">📄 Selecione ou arraste o arquivo</span>
+      <input type="file" name="conta_luz" id="conta_luz" accept="image/*,.pdf" required>
+    </div>
 
-    <!-- Campo condicional de PJ (aparece só se “Sim”) -->
+    <!-- Campo condicional PJ -->
     <div id="pj_extra" style="display:none">
       <label>Contrato Social (PDF ou imagem)</label>
-      <input type="file" id="contrato_social" name="contrato_social" accept="image/*,.pdf">
-      <small style="display:block;margin-top:6px;color:#6B7280">Obrigatório apenas se “PJ = Sim”.</small>
+      <div class="file-drop" id="wrap_contrato">
+        <span class="file-label">📄 Selecionar arquivo</span>
+        <input type="file" id="contrato_social" name="contrato_social" accept="image/*,.pdf">
+      </div>
+      <small>Obrigatório apenas se “PJ = Sim”.</small>
     </div>
 
     <!-- Consentimento LGPD -->
@@ -315,12 +337,12 @@
       <input type="hidden" name="consent_ts" id="consent_ts">
       <input type="hidden" name="terms_version" value="TERMS-LGPD-v1-2025-10-17">
       <input type="hidden" name="ua" id="ua">
-      <input type="hidden" name="ref" id="ref">
+      <input type="hidden" name="utm_ref" id="utm_ref">
     </div>
 
     <button type="submit" class="btn">Enviar documentos</button>
 
-    <!-- Campos ocultos (fallback base64) -->
+    <!-- Fallback base64 -->
     <input type="hidden" name="b64_doc_frente">
     <input type="hidden" name="b64_doc_verso">
     <input type="hidden" name="b64_conta_luz">
@@ -338,30 +360,31 @@
         <p><strong>Controladora:</strong> Conexão Green (conexaogreenbr@gmail.com).</p>
         <h4>1. Finalidade</h4>
         <p>Cadastro e verificação de titularidade para adesão ao benefício de energia com desconto, contato de suporte e confirmação.</p>
+
         <h4>2. Dados coletados</h4>
         <ul>
           <li>Nome, e-mail e celular com DDD.</li>
-          <li>Frente e verso de documento de identidade (RG/CNH) e conta de luz recente.</li>
-          <li>Opcionalmente, login e senha da distribuidora para consulta de consumo.</li>
-          <li>Quando aplicável (PJ), Contrato Social.</li>
-          <li>Metadados técnicos do envio (data/horário e nomes dos arquivos).</li>
+          <li>Frente e verso de documento de identidade.</li>
+          <li>Conta de luz recente.</li>
+          <li>Quando aplicável: login da distribuidora e Contrato Social.</li>
         </ul>
+
         <h4>3. Bases legais</h4>
-        <p>Consentimento (art. 7º, I) e execução de procedimentos preliminares ao contrato (art. 7º, V) da LGPD.</p>
+        <p>Consentimento (art. 7º, I) e execução de procedimentos preliminares ao contrato.</p>
+
         <h4>4. Uso e compartilhamento</h4>
-        <p>Uso exclusivo para análise de elegibilidade, comprovação de titularidade e formalização.
-           Compartilhamento somente com parceiros operacionais necessários, vinculados às mesmas finalidades.</p>
+        <p>Uso exclusivo para análise de elegibilidade e formalização.</p>
+
         <h4>5. Segurança e armazenamento</h4>
-        <p>Arquivos armazenados em Google Drive com acesso restrito; medidas técnicas e administrativas razoáveis para proteção contra acessos não autorizados e incidentes.</p>
+        <p>Armazenamento seguro em Google Drive com acesso restrito.</p>
+
         <h4>6. Retenção</h4>
-        <p>Dados mantidos pelo período necessário à análise/contratação e pelos prazos legais; depois, exclusão ou anonimização.</p>
+        <p>Dados mantidos apenas pelo período necessário.</p>
+
         <h4>7. Direitos do titular</h4>
-        <p>Acesso, correção, anonimização/bloqueio/eliminação, portabilidade, informações sobre compartilhamento e
-           <strong>revogação do consentimento</strong>. Contato: <a href="mailto:conexaogreenbr@gmail.com">conexaogreenbr@gmail.com</a>.</p>
-        <h4>8. Atualizações</h4>
-        <p>Podemos atualizar este documento; a versão vigente é identificada pelo campo “versão de termos”.</p>
-        <p>Ao marcar o checkbox, você declara ciência e concordância com o tratamento descrito.</p>
+        <p>Solicitar acesso, correção, exclusão e revogação do consentimento.</p>
       </div>
+
       <footer style="display:flex;justify-content:flex-end;gap:8px">
         <button type="button" id="fechar-termos-2" class="btn">Fechar</button>
       </footer>
@@ -583,6 +606,24 @@
   <p>O processo continua simples e 100% online — a validação e assinatura são feitas pelo celular, com reconhecimento facial.</p>
 </details>
 </section>
+
+<!-- ============================
+     PARCEIROS
+============================= -->
+<section id="parceiros" class="section container parceiros-section">
+  <h2>Nossos Parceiros</h2>
+  <p class="sub">
+    Organizações que confiam na Conexão Green para levar energia limpa e economia aos seus membros.
+  </p>
+
+  <div class="parceiros-grid">
+    <div class="parceiro-item">
+      <img src="./img/logos/sindi-logo.png" alt="Sindicato dos Aeroviários" />
+      <span>Sindicato dos Aeroviários</span>
+    </div>
+  </div>
+</section>
+
 
 <footer style="background-color:#0a0a0a;padding:16px 0;">
   <div class="container row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
