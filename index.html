@@ -259,6 +259,9 @@
         target="upload_iframe"
         style="max-width:600px;margin:auto">
 
+        <!-- 🔥 Campo oculto para capturar UTM -->
+      <input type="hidden" id="ref" name="ref" value="">
+
     <!-- Identificação -->
     <label>Nome completo do titular*</label>
     <input type="text" name="nome" required placeholder="Digite seu nome completo">
@@ -720,6 +723,20 @@
       }
     });
   })();
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const p = new URLSearchParams(location.search);
+
+  const utm =
+      p.get("ref") ||
+      p.get("utm_source") ||
+      p.get("utm") ||
+      "";
+
+  const hidden = document.getElementById("ref");
+  if (hidden) hidden.value = utm.toUpperCase();
+});
+
 </script>
 
 </body>
