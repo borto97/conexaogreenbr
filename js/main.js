@@ -363,4 +363,113 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ===== PJ -> exibir/obrigar Contrato Social =====
+  const pjSel = document.getElementById("is_pj");
+  const pjExtra = document.getElementById("pj_extra");
+  const contrato = document.getElementById("contrato_social");
+
+  function syncPJ() {
+    const isPJ = pjSel && pjSel.value === "sim";
+    if (pjExtra) pjExtra.style.display = isPJ ? "block" : "none";
+    if (contrato) contrato.required = !!isPJ;
+  }
+  if (pjSel) {
+    pjSel.addEventListener("change", syncPJ);
+    syncPJ();
+  }
+
+  // ===== UTM/ref + UA + consent timestamp =====
+  const p = new URLSearchParams(location.search);
+  const utm = (p.get("utm_source") || p.get("utm") || p.get("ref") || "").trim();
+
+  const refInput = document.getElementById("ref");
+  const utmRef = document.getElementById("utm_ref");
+  const ua = document.getElementById("ua");
+  const chk = document.getElementById("aceiteLGPD");
+  const ts = document.getElementById("consent_ts");
+
+  if (refInput) refInput.value = utm;
+  if (utmRef) utmRef.value = utm;
+  if (ua) ua.value = navigator.userAgent;
+
+  if (chk && ts) {
+    chk.addEventListener("change", () => {
+      ts.value = chk.checked ? new Date().toISOString() : "";
+    });
+  }
+
+  // ===== (RECOMENDADO) Fallback base64: preenche hidden b64_* antes de enviar =====
+  // Isso garante que, mesmo se multipart falhar, teu Apps Script salva pelo fallback.
+  const form = document.getElementById("cadastroDocs");
+  if (form) {
+    form.addEventListener("submit", async (ev) => {
+      // evita loop
+      if (form.dataset.sending === "1") return;
+      form.dataset.sending = "1";
+      ev.preventDefault();
+
+      async function toDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(String(r.result || ""));
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      }
+
+      async function fillHidden(inputId, hiddenName) {
+        const input = document.getElementById(inputId);
+        const hidden = form.querySelector(`input[name="${hiddenName}"]`);
+        if (!input || !hidden) return;
+
+        const f = input.files && input.files[0];
+        if (!f) { hidden.value = ""; return; }
+
+        // Limite prudente (DataURL pode ficar gigante). Ajusta se quiser.
+        const MAX_MB = 6;
+        if (f.size > MAX_MB * 1024 * 1024) {
+          // se for grande, deixa vazio e confia no multipart
+          hidden.value = "";
+          return;
+        }
+
+        hidden.value = await toDataURL(f);
+      }
+
+      try {
+        await fillHidden("doc_frente", "b64_doc_frente");
+        await fillHidden("doc_verso", "b64_doc_verso");
+        await fillHidden("conta_luz", "b64_conta_luz");
+
+        // contrato social só se PJ
+        if (pjSel && pjSel.value === "sim") {
+          await fillHidden("contrato_social", "b64_contrato_social");
+        } else {
+          const h = form.querySelector(`input[name="b64_contrato_social"]`);
+          if (h) h.value = "";
+        }
+      } catch (e2) {
+        // se falhar, segue com multipart mesmo assim
+      }
+
+      // agora envia de verdade
+      form.submit();
+      // libera depois de um tempinho (evita travar submit futuro)
+      setTimeout(() => { form.dataset.sending = "0"; }, 1500);
+    });
+  }
+
+  // ===== feedback do iframe via postMessage =====
+  window.addEventListener("message", (ev2) => {
+    const data = ev2 && ev2.data;
+    if (!data || typeof data !== "object") return;
+
+    if (data.ok) {
+      alert(`✅ Documentos enviados!\nArquivos salvos: ${data.saved_count}\nPasta: ${data.folder?.name || ""}`);
+    } else if (data.error) {
+      alert(`❌ Erro ao enviar documentos:\n${data.error}`);
+    }
+  });
+
+  
 });
