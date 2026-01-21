@@ -1,6 +1,6 @@
 // ================== CONFIG ==================
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbznBiO_6Iq8agDHXTHe56XsyCWOhJtQksU0yLdLQeTe1c5P2Cz0zYarOIvIG917lixyCw/exec';
-const WHATSAPP_NUMERO = '5551993208419';
+const WHATSAPP_NUMERO = '5551995884139';
 const TAXA = 0.10;
 const MESES = 24;
 
